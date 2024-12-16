@@ -33,7 +33,7 @@ fm = @formula(
         MC & MC +
         SS & SS
 )
-m = fit(MixedModel, fm, df; REML = true)
+m = fit(MixedModel, fm, df; REML=true)
 
 β = m.β
 y = m.y
@@ -48,8 +48,8 @@ m.vcov
 function modified_profile_likelihood(σsq)
     σsq_gam, σsq_eps = σsq
     Vinv = inv(V(σsq_gam, σsq_eps))
-    -1 / 2 * logdet(V(σsq_gam, σsq_eps)) - 1 / 2 * logdet(X' * Vinv * X) -
-    1 / 2 * (y - X * β)' * Vinv * (y - X * β)
+    return -1 / 2 * logdet(V(σsq_gam, σsq_eps)) - 1 / 2 * logdet(X' * Vinv * X) -
+           1 / 2 * (y - X * β)' * Vinv * (y - X * β)
 end
 FIM_obs = -ForwardDiff.hessian(modified_profile_likelihood, [σsq_eps, σsq_gam])
 W = inv(FIM_obs)
@@ -77,7 +77,7 @@ for i in eachindex(dVinv_dσsq)
 end
 
 varcovar_adjusted = m.vcov + 2 * m.vcov * factor * m.vcov
-adjusted_error = sqrt.([varcovar_adjusted[i, i] for i = 1:size(m.vcov, 1)])
+adjusted_error = sqrt.([varcovar_adjusted[i, i] for i in 1:size(m.vcov, 1)])
 
 c = 1
 p = length(adjusted_error)

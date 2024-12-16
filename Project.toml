@@ -1,30 +1,34 @@
 name = "KenwardRoger"
 uuid = "fb531da0-582c-4a62-80cc-836e12ba9c31"
-authors = ["Arno Strouwen"]
+authors = ["Arno Strouwen", "José Núñez Ares"]
 version = "0.0.1-DEV"
 
 [deps]
-CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MixedModels = "ff71e718-51f3-5ec2-a782-8ffcbfa3c316"
 
 [compat]
-Aqua = "0.8"
-CSV = "0.10.15"
-DataFrames = "1.7.0"
-Distributions = "0.25.113"
-ForwardDiff = "0.10.38"
-JET = "0.9"
-MixedModels = "4.27.0"
+Aqua = "0.8.9"
+CSV = "0.10"
+DataFrames = "1.5"
+Distributions = "0.25.49"
+ForwardDiff = "0.10.13"
+JET = "0.9.12"
+LinearAlgebra = "1.10"
+MixedModels = "4.22"
+SafeTestsets = "0.1"
 Test = "1.10"
 julia = "1.10"
 
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
+SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Aqua", "JET", "Test"]
+test = ["Aqua", "CSV", "DataFrames", "JET", "SafeTestsets", "Test"]

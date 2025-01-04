@@ -18,4 +18,7 @@ using SafeTestsets
     @safetestset "split plot experiment" begin
         include("split plot experiment.jl")
     end
+    @safetestset "random slope" begin
+        include("random_slope.jl")
+    end
 end

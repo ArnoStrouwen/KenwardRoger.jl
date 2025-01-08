@@ -18,4 +18,7 @@ using SafeTestsets
     @safetestset "split plot experiment" begin
         include("split plot experiment.jl")
     end
+    @safetestset "strip plot experiment" begin
+        include("strip plot experiment.jl")
+    end
 end

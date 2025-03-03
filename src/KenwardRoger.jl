@@ -14,6 +14,8 @@ export adjust_SW
 
 export vcov_varpar
 
+export ftest
+
 struct LinearMixedModelKR{Float64} <: MixedModel{Float64}
     m::LinearMixedModel{Float64}
     varcovar_adjusted::Matrix{Float64}
@@ -297,5 +299,50 @@ function Base.show(io::IO, ::MIME"text/markdown", m::LinearMixedModelSW)
     align = [:l, :r, :r, :r, :r, :r, :r, :r, :r]
     table = Markdown.Table(rows, align)
     return print(io, Markdown.MD(table))
+end
+
+function ftest(m::LinearMixedModel, L; FIM_σ²=:observed)
+    q = size(L, 2)
+    β = m.β
+    p = length(β)
+    y = m.y
+    X = m.X
+    n = length(y)
+    Φ = m.vcov
+
+    covLβ = L * Φ * L'
+    F = eigen(Hermitian(covLβ))
+    d = F.values
+    P = F.vectors
+    L̃ = P' * L
+
+    σ²γ = vcat([collect(sigmas) .^ 2 for sigmas in m.sigmas]...)
+    σ²s = [m.sigma^2, σ²γ...]
+    Zsγ = vcat(
+        [
+            [m.reterms[i][:, j:length(m.sigmas[i]):end] for j in 1:length(m.sigmas[i])] for
+            i in 1:length(m.sigmas)
+        ]...,
+    )
+    Zs = [I(n), Zsγ...]
+    ZZs = [Z * Z' for Z in Zs]
+    V = sum([σ²s[i] * ZZs[i] for i in eachindex(σ²s)])
+    Vinv = inv(V)
+
+    W = vcov_varpar(m; FIM_σ²=FIM_σ²)
+    vs = zeros(q)
+    for i in eachindex(vs)
+        grad = [
+            first(L̃[i, :]' * Φ * X' * Vinv * ZZ * Vinv * X * Φ * L̃[i, :]) for ZZ in ZZs
+        ]
+        vs[i] =
+            2 * (first(L̃[i, :]' * inv(X' * inv(V) * X) * L̃[i, :]))^2 / (grad' * W * grad)
+    end
+
+    EQ = sum(νᵢ / (νᵢ - 2) for νᵢ in vs)
+    v = 2 * EQ / (EQ - q)
+
+    Fstar = 1 / q * (L * m.beta)' * inv(covLβ) * (L * m.beta)
+    return (v, Fstar)
 end
 end

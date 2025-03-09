@@ -35,16 +35,26 @@ function vcov_varpar(m::MixedModel; FIM_σ²=:observed)
     n = length(y)
     Φ = m.vcov
 
-    σ²γ = vcat([collect(sigmas) .^ 2 for sigmas in m.sigmas]...)
+    σ²γ = [
+        r == c ? m.sigmas[b][r]^2 : m.sigmarhos[b][2][1] * m.sigmas[b][r] * m.sigmas[b][c]
+        for (b, r, c) in m.parmap
+    ]
+    # TODO fix m.sigmarhos[b][2][1] to deal with multiple correlations
+    # it should map the (r,c) to the appropriate linear index of m.sigmarhos[b][2]
+    # i.e. if there are 3 correlations in a 3by3 matrix(2,1)->1 (3,1)->2 (3,2)->3
     σ²s = [m.sigma^2, σ²γ...]
-    Zsγ = vcat(
-        [
-            [m.reterms[i][:, j:length(m.sigmas[i]):end] for j in 1:length(m.sigmas[i])] for
-            i in 1:length(m.sigmas)
-        ]...,
-    )
+    Zsγ = [
+        if r == c
+            m.reterms[b][:, r:length(m.sigmas[b]):end]
+        else
+            (
+            m.reterms[b][:, c:length(m.sigmas[b]):end],
+            m.reterms[b][:, r:length(m.sigmas[b]):end],
+        )
+        end for (b, r, c) in m.parmap
+    ]
     Zs = [I(n), Zsγ...]
-    ZZs = [Z * Z' for Z in Zs]
+    ZZs = [Z isa Tuple ? (Z[1] * Z[2]') + (Z[2] * Z[1]') : Z * Z' for Z in Zs]
     V = sum([σ²s[i] * ZZs[i] for i in eachindex(σ²s)])
     Vinv = inv(V)
     P = [-transpose(X) * Vinv * ZZ * Vinv * X for ZZ in ZZs]
@@ -94,16 +104,26 @@ function adjust_KR(m::MixedModel; FIM_σ²=:observed)
     n = length(y)
     Φ = m.vcov
 
-    σ²γ = vcat([collect(sigmas) .^ 2 for sigmas in m.sigmas]...)
+    σ²γ = [
+        r == c ? m.sigmas[b][r]^2 : m.sigmarhos[b][2][1] * m.sigmas[b][r] * m.sigmas[b][c]
+        for (b, r, c) in m.parmap
+    ]
+    # TODO fix m.sigmarhos[b][2][1] to deal with multiple correlations
+    # it should map the (r,c) to the appropriate linear index of m.sigmarhos[b][2]
+    # i.e. if there are 3 correlations in a 3by3 matrix(2,1)->1 (3,1)->2 (3,2)->3
     σ²s = [m.sigma^2, σ²γ...]
-    Zsγ = vcat(
-        [
-            [m.reterms[i][:, j:length(m.sigmas[i]):end] for j in 1:length(m.sigmas[i])] for
-            i in 1:length(m.sigmas)
-        ]...,
-    )
+    Zsγ = [
+        if r == c
+            m.reterms[b][:, r:length(m.sigmas[b]):end]
+        else
+            (
+            m.reterms[b][:, c:length(m.sigmas[b]):end],
+            m.reterms[b][:, r:length(m.sigmas[b]):end],
+        )
+        end for (b, r, c) in m.parmap
+    ]
     Zs = [I(n), Zsγ...]
-    ZZs = [Z * Z' for Z in Zs]
+    ZZs = [Z isa Tuple ? (Z[1] * Z[2]') + (Z[2] * Z[1]') : Z * Z' for Z in Zs]
     V = sum([σ²s[i] * ZZs[i] for i in eachindex(σ²s)])
     Vinv = inv(V)
     P = [-transpose(X) * Vinv * ZZ * Vinv * X for ZZ in ZZs]

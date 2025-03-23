@@ -99,6 +99,16 @@ function vcov_varpar(m::MixedModel; FIM_σ²=:observed)
 end
 
 function adjust_KR(m::MixedModel; FIM_σ²=:observed)
+    let err = nothing
+        try
+            loglikelihood(m)
+        catch err
+        end
+        if err === nothing
+            error("model needs to be estimated using REML")
+        end
+    end
+
     β = m.β
     p = length(β)
     y = m.y

@@ -24,4 +24,7 @@ using SafeTestsets
     @safetestset "random slope" begin
         include("random slope.jl")
     end
+    @safetestset "test_errors" begin
+        include("test_errors.jl")
+    end
 end
